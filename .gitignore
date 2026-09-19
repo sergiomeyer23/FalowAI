@@ -1,0 +1,44 @@
+# Dependencies and local tool caches
+node_modules/
+frontend/node_modules/
+.npm/
+.m2/
+.config/
+
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# Java / Spring
+backend/target/
+backend/.mvn/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+frontend/.env.local
+backend/.env
+
+# Runtime data
+*.log
+logs/
+cache/
+uploads/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# TypeScript build metadata
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+.nyc_output/
+.pytest_cache/
+__pycache__/

@@ -1,0 +1,25 @@
+'use client';
+
+import Link from 'next/link';
+import { AppShell } from '@/components/app-shell';
+import { PageHeader } from '@/components/page-header';
+import { ArrowRightIcon, ChartIcon, CheckIcon, ClockIcon, FlameIcon, TargetIcon } from '@/components/icons';
+import { useLearningState } from '@/hooks/use-learning-state';
+import { xpIntoLevel, xpToNextLevel } from '@/lib/learning-engine';
+import type { SkillKey } from '@/lib/types';
+
+const skillOrder: SkillKey[] = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking', 'professional'];
+
+export default function ProgressPage() {
+  const { state } = useLearningState();
+  const levelProgress = Math.round((xpIntoLevel(state.profile.xp) / 300) * 100);
+  return <AppShell>
+    <PageHeader eyebrow="Evidence over XP" title="Your progress, in context." subtitle="XP reflects effort. CEFR and skill levels move only when there is enough evidence from performance." action="Run assessment" actionHref="/assessment" />
+    <div className="page-grid">
+      <section className="card progress-header-card"><div><div className="eyebrow">Falow Level {state.profile.falowLevel}</div><div className="progress-stat"><span className="progress-big">{state.profile.xp.toLocaleString('en-US')}</span><span className="progress-stat-copy">total XP<br />{xpToNextLevel(state.profile.xp)} XP to next level</span></div><div className="progress-track" style={{ marginTop: 18, maxWidth: 480 }}><div className="progress-fill" style={{ width: `${levelProgress}%` }} /></div><div style={{ display: 'flex', gap: 15, marginTop: 15, flexWrap: 'wrap' }}><span className="card-meta"><FlameIcon size={13} /> {state.profile.streak} day streak</span><span className="card-meta"><ClockIcon size={13} /> {state.profile.studyMinutesThisWeek} min this week</span></div></div><div className="ring-wrap"><div className="ring"><div className="ring-copy"><b>{state.profile.cefr}</b><span>overall</span></div></div></div></section>
+      <section className="card card-pad"><div className="section-heading"><div><h2>Skill evidence</h2><p>Current mastery estimates by area.</p></div><ChartIcon size={17} /></div><div className="skill-list">{skillOrder.map((key) => { const skill = state.skills[key]; return <div className="skill-progress-row" key={key}><span className="skill-progress-label">{skill.label}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${skill.score}%`, background: skill.color, boxShadow: 'none' }} /></div><span className="skill-progress-value">{skill.level}</span></div>; })}</div></section>
+      <section className="card card-pad"><div className="section-heading"><div><h2>Error memory</h2><p>Falow keeps patterns alive until they are stable in more than one context.</p></div><TargetIcon size={17} /></div><div className="table-wrap"><table className="error-table"><thead><tr><th>Pattern</th><th>Evidence</th><th>Success</th><th>Status</th></tr></thead><tbody>{state.errors.map((error) => { const success = Math.round((error.corrected / Math.max(error.occurrences, 1)) * 100); return <tr key={error.id}><td><b>{error.title}</b><div className="dim" style={{ marginTop: 4 }}>{error.category}</div></td><td className="dim">{error.occurrences} occurrences<br />{error.corrected} corrected</td><td>{success}%</td><td><span className={`pill ${error.status === 'Mastered' ? 'mint' : error.status === 'Improving' ? 'blue' : ''}`}>{error.status}</span></td></tr>; })}</tbody></table></div></section>
+      <div className="bottom-grid" style={{ marginTop: 0 }}><section className="card card-pad"><div className="section-heading"><div><h2>Recent sessions</h2><p>What contributed to the current picture.</p></div><Link href="/practice" className="text-link">Practice <ArrowRightIcon size={13} /></Link></div><div className="info-list">{state.recentSessions.map((session) => <div className="info-row" key={session.id}><div style={{ minWidth: 0 }}><b style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{session.title}</b><span>{session.date} · {session.kind}</span></div><span style={{ color: session.score >= 80 ? 'var(--mint)' : 'var(--amber)' }}>{session.score}% · +{session.xp} XP</span></div>)}</div></section><section className="card card-pad"><div className="section-heading"><div><h2>CEFR journey</h2><p>Assessments, not grinding, move this estimate.</p></div></div>{state.assessmentHistory.length ? state.assessmentHistory.slice(0, 3).map((item) => <div className="info-row" key={item.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }}><span>{item.date} · {item.focus}</span><b>{item.previousLevel} <ArrowRightIcon size={12} /> {item.newLevel}</b></div>) : <div className="empty-note">Your first assessment is still waiting. Complete it to give the baseline a fresh evidence point.</div>}<Link className="secondary-button" href="/assessment" style={{ marginTop: 16, width: '100%' }}>Update assessment <ArrowRightIcon size={14} /></Link></section></div>
+    </div>
+  </AppShell>;
+}

@@ -1,0 +1,34 @@
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/falow}
+    username: ${DATABASE_USERNAME:falow}
+    password: ${DATABASE_PASSWORD:change-me}
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+falow:
+  cors-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  auth:
+    username: ${FALOW_USERNAME:}
+    password-hash: ${FALOW_PASSWORD_HASH:}
+    jwt-secret: ${JWT_SECRET:}
+    token-hours: ${JWT_TOKEN_HOURS:12}
+  ai:
+    provider: ${AI_PROVIDER:unavailable}
+    openai-api-key: ${OPENAI_API_KEY:}
+    openai-model: ${OPENAI_MODEL:gpt-4o-mini}
