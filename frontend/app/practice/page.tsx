@@ -1,25 +1,37 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { PageHeader } from '@/components/page-header';
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, RefreshIcon, TargetIcon } from '@/components/icons';
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, RefreshIcon, TargetIcon, VolumeIcon } from '@/components/icons';
 import { useLearningState } from '@/hooks/use-learning-state';
 import { exercises } from '@/lib/learning-data';
 import { applyExerciseResult, evaluateExercise } from '@/lib/learning-engine';
-import type { Exercise, ExerciseResult } from '@/lib/types';
+import type { Exercise, ExerciseResult, SkillKey } from '@/lib/types';
 
 const letters = ['A', 'B', 'C', 'D'];
 
-export default function PracticePage() {
+function PracticeContent() {
   const { state, updateState } = useLearningState();
+  const searchParams = useSearchParams();
+  const requestedSkill = searchParams.get('skill') as SkillKey | null;
+  const availableExercises = requestedSkill ? exercises.filter((item) => item.skill === requestedSkill) : exercises;
+  const exerciseSet = availableExercises.length ? availableExercises : exercises;
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<ExerciseResult | null>(null);
   const [awardedXp, setAwardedXp] = useState<number | null>(null);
-  const exercise: Exercise = exercises[exerciseIndex % exercises.length];
+  const exercise: Exercise = exerciseSet[exerciseIndex % exerciseSet.length];
   const attempts = state.activityAttempts[exercise.id] ?? 0;
+
+  useEffect(() => {
+    setExerciseIndex(0);
+    setAnswer('');
+    setFeedback(null);
+    setAwardedXp(null);
+  }, [requestedSkill]);
 
   function submit() {
     if (!answer.trim() || feedback) return;
@@ -31,13 +43,19 @@ export default function PracticePage() {
   }
 
   function next() {
-    setExerciseIndex((current) => (current + 1) % exercises.length);
+    setExerciseIndex((current) => (current + 1) % exerciseSet.length);
     setAnswer('');
     setFeedback(null);
     setAwardedXp(null);
   }
 
-  const isLastInLoop = exerciseIndex % exercises.length === exercises.length - 1;
+  const isLastInLoop = exerciseIndex % exerciseSet.length === exerciseSet.length - 1;
+
+  function playListening() {
+    if (!exercise.mediaText || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(exercise.mediaText));
+  }
 
   return (
     <AppShell>
@@ -47,6 +65,7 @@ export default function PracticePage() {
         <section className="card exercise-card">
           <div className="exercise-meta"><span className="pill blue"><TargetIcon size={12} /> {exercise.level}</span><span className="pill">{exercise.topic}</span><span className="pill">{exercise.baseXp} XP first attempt</span><span className="pill">Attempt {attempts + 1}</span></div>
           {exercise.context ? <p className="exercise-context">{exercise.context}</p> : null}
+          {exercise.mediaText ? <button className="secondary-button" onClick={playListening} style={{ marginBottom: 22 }}><VolumeIcon size={14} /> Play listening passage</button> : null}
           <h2 className="exercise-prompt">{exercise.prompt}</h2>
           {exercise.type === 'choice' ? <div className="options">
             {exercise.options?.map((option, index) => {
@@ -90,4 +109,8 @@ export default function PracticePage() {
       </div>
     </AppShell>
   );
+}
+
+export default function PracticePage() {
+  return <Suspense fallback={<div className="main-inner"><div className="card card-pad">Loading practice…</div></div>}><PracticeContent /></Suspense>;
 }

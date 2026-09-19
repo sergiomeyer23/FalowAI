@@ -57,6 +57,7 @@ export interface Exercise {
   prompt: string;
   context?: string;
   options?: string[];
+  mediaText?: string;
   acceptedAnswers: string[];
   answer: string;
   explanation: string;

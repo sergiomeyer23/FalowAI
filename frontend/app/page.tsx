@@ -21,7 +21,9 @@ const activityIcons: Record<ActivityKind, { icon: typeof BookIcon; className: st
 const skillOrder: SkillKey[] = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking', 'professional'];
 
 function activityHref(activity: Activity) {
-  return activity.kind === 'speaking' || activity.kind === 'professional' ? '/speaking' : '/practice';
+  if (activity.kind === 'speaking' || activity.kind === 'professional') return '/speaking';
+  if (activity.kind === 'writing') return '/writing';
+  return `/practice?skill=${activity.kind}`;
 }
 
 export default function DashboardPage() {

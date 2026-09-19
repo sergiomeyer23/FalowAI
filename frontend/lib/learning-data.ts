@@ -103,6 +103,38 @@ export const exercises: Exercise[] = [
     baseXp: 20
   },
   {
+    id: 'reading-inference-01',
+    type: 'choice',
+    skill: 'reading',
+    level: 'B2',
+    topic: 'argument and inference',
+    objective: 'identify an author’s main claim and implied consequence',
+    prompt: 'What is the author mainly arguing?',
+    context: 'Read: Teams often celebrate a faster release, but speed without observability simply moves the cost downstream. When a failure reaches users, the missing evidence takes longer to reconstruct than the original feature took to build.',
+    options: ['Fast releases are always a mistake.', 'Observability makes every release slower.', 'Speed needs evidence, or the apparent gain may become a larger cost.', 'Features should never be released to users.'],
+    acceptedAnswers: ['Speed needs evidence, or the apparent gain may become a larger cost.'],
+    answer: 'Speed needs evidence, or the apparent gain may become a larger cost.',
+    explanation: 'The contrast between speed and downstream cost supports the broader claim that release velocity needs observability and evidence.',
+    errorKey: 'reading inference',
+    baseXp: 22
+  },
+  {
+    id: 'listening-meeting-01',
+    type: 'choice',
+    skill: 'listening',
+    level: 'B2',
+    topic: 'natural workplace listening',
+    objective: 'identify an implied action in a meeting update',
+    prompt: 'What does the speaker imply the team should do next?',
+    context: 'Listen first. The transcript is intentionally hidden until after your answer.',
+    mediaText: 'The numbers are moving in the right direction, but I would hold off on presenting them to the client until we have checked the late entries. Let’s run one more validation pass this afternoon.',
+    options: ['Present the numbers immediately.', 'Delete the late entries.', 'Run another validation pass before presenting.', 'Ask the client to validate the data.'],
+    acceptedAnswers: ['Run another validation pass before presenting.'],
+    answer: 'Run another validation pass before presenting.',
+    explanation: 'Hold off until and let’s run one more validation pass both point to a further internal check before the client presentation.',
+    baseXp: 25
+  },
+  {
     id: 'vocabulary-make-do-01',
     type: 'choice',
     skill: 'vocabulary',

@@ -10,7 +10,8 @@ Este primeiro vertical slice transforma o workspace vazio em uma base executáve
 
 - dashboard pessoal com perfil CEFR, Falow Level, XP, streak e missão diária;
 - skill mastery separado por habilidade;
-- exercícios reais de grammar/vocabulary com resposta, correção, explicação e alternativa natural;
+- exercícios reais de grammar, vocabulary, reading e listening com resposta, correção, explicação e alternativa natural;
+- writing lab funcional para uma atualização profissional, com sinais explícitos de tarefa, organização e registro (sem fingir correção semântica quando não há IA conectada);
 - XP calculado por um `XPService`/learning engine com anti-farming;
 - memória local de erros recorrentes e recomendações baseadas no sinal mais fraco;
 - avaliação inicial curta que atualiza o perfil CEFR e registra histórico;
