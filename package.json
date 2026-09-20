@@ -4,10 +4,8 @@
   "version": "0.1.0",
   "description": "Falow AI — personal AI English teacher",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "start": "npm --prefix frontend run start",
-    "lint": "npm --prefix frontend run lint",
-    "test": "npm --prefix frontend run test"
-  }
+  "postinstall": "npm --prefix frontend install",
+  "build": "npm --prefix frontend run build",
+  "start": "npm --prefix frontend start"
+}
 }
