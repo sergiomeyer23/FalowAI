@@ -5,6 +5,7 @@ import { AppShell } from '@/components/app-shell';
 import { PageHeader } from '@/components/page-header';
 import { ArrowRightIcon, BookIcon, ChartIcon, MicIcon, SparkIcon, TargetIcon, VolumeIcon } from '@/components/icons';
 import { useLearningState } from '@/hooks/use-learning-state';
+import { recommendationFor } from '@/lib/recommendations';
 import type { SkillKey } from '@/lib/types';
 
 const modules: Array<{ key: SkillKey; title: string; description: string; level: string; icon: typeof BookIcon; color: string; href: string }> = [
@@ -17,7 +18,13 @@ const modules: Array<{ key: SkillKey; title: string; description: string; level:
   { key: 'professional', title: 'Professional English', description: 'Discuss code, data, incidents, meetings and decisions spontaneously.', level: 'B2 focus', icon: TargetIcon, color: 'rgba(184,162,255,.13)', href: '/speaking' }
 ];
 
+function pathnameOf(href: string): string {
+  const queryIndex = href.indexOf('?');
+  return queryIndex === -1 ? href : href.slice(0, queryIndex);
+}
+
 export default function LibraryPage() {
   const { state } = useLearningState();
-  return <AppShell><PageHeader eyebrow="One teacher · Multiple modes" title="Your learning library." subtitle="Every module is a different way for Falow to help you reach the same goal: precise, flexible English in real situations." /><div className="library-grid">{modules.map((module) => { const Icon = module.icon; const skill = state.skills[module.key]; return <Link className="card library-card" href={module.href} key={module.key}><div className="library-icon" style={{ background: module.color }}><Icon size={18} /></div><div className="library-title">{module.title}</div><div className="library-desc">{module.description}</div><div className="library-footer"><span className="library-level">{module.level} · current {skill.level}</span><ArrowRightIcon size={15} /></div></Link>; })}</div><div className="notice" style={{ marginTop: 18 }}><SparkIcon size={15} /><span>Falow keeps one continuous memory across these modes. A grammar pattern found in speaking can return in writing; a professional topic can become listening practice.</span></div></AppShell>;
+  const recommendation = recommendationFor(state);
+  return <AppShell><PageHeader eyebrow="One teacher · Multiple modes" title="Your learning library." subtitle="Every module is a different way for Falow to help you reach the same goal: precise, flexible English in real situations." /><div className="library-grid">{modules.map((module) => { const Icon = module.icon; const skill = state.skills[module.key]; const isRecommended = pathnameOf(module.href) === pathnameOf(recommendation.href); return <Link className={`card library-card${isRecommended ? ' recommended' : ''}`} href={module.href} key={module.key}><div className="library-icon" style={{ background: module.color }}><Icon size={18} /></div><div className="library-title">{module.title}</div><div className="library-desc">{module.description}</div><div className="library-footer"><span className="library-level">{module.level} · current {skill.level}</span>{isRecommended ? <span className="library-recommended">Recommended next</span> : null}<ArrowRightIcon size={15} /></div></Link>; })}</div><div className="notice" style={{ marginTop: 18 }}><SparkIcon size={15} /><span>Falow keeps one continuous memory across these modes. A grammar pattern found in speaking can return in writing; a professional topic can become listening practice.</span></div></AppShell>;
 }
