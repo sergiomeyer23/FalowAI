@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { AlertIcon, ArrowRightIcon, CheckIcon, MicIcon, VolumeIcon } from '@/components/icons';
 import { useLearningState } from '@/hooks/use-learning-state';
 import { analyzeSpeakingTranscript, levelForXp } from '@/lib/learning-engine';
-import type { SpeakingFeedback } from '@/lib/types';
+import type { SpeakingCorrection, SpeakingFeedback } from '@/lib/types';
 
 type SpeechRecognitionResultItem = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> };
@@ -29,6 +29,7 @@ const prompt = 'Explain how you would investigate a database query that is retur
 export default function SpeakingPage() {
   const { updateState } = useLearningState();
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
   const finalTextRef = useRef('');
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -36,6 +37,10 @@ export default function SpeakingPage() {
   const [notice, setNotice] = useState('');
 
   useEffect(() => () => recognitionRef.current?.stop(), []);
+
+  useEffect(() => {
+    transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight });
+  }, [transcript]);
 
   function startListening() {
     const SpeechRecognition = (window as SpeechWindow).SpeechRecognition || (window as SpeechWindow).webkitSpeechRecognition;
@@ -88,6 +93,13 @@ export default function SpeakingPage() {
     recognitionRef.current?.stop();
   }
 
+  function recordAgain() {
+    setFeedback(null);
+    setTranscript('');
+    finalTextRef.current = '';
+    startListening();
+  }
+
   function speakFeedback() {
     if (!feedback || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -110,11 +122,33 @@ export default function SpeakingPage() {
             <div className="card card-pad" style={{ background: 'rgba(53,201,139,.05)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 15 }}><div><div className="eyebrow" style={{ color: 'var(--mint)' }}>Falow&apos;s first read</div><p className="card-meta" style={{ color: '#dbe8e4', marginTop: 9 }}>{feedback.response}</p></div><button className="icon-button" onClick={speakFeedback} aria-label="Listen to Falow feedback"><VolumeIcon size={16} /></button></div>
               <div className="feedback-columns">
-                <div><div className="card-title">Language corrections <span style={{ color: 'var(--muted)', fontWeight: 400 }}>· {feedback.summary}</span></div><div style={{ display: 'grid', gap: 8, marginTop: 11 }}>{feedback.corrections.length ? feedback.corrections.map((correction) => <div className="correction-row" key={`${correction.original}-${correction.corrected}`}><div className="correction-original">{correction.original}</div><div className="correction-fixed">{correction.corrected}</div><div className="correction-why">{correction.explanation}</div></div>) : <div className="empty-note">No high-signal recurring error was detected in this short sample. That is not the same as a full pronunciation evaluation.</div>}</div></div>
+                <div>
+                  <div className="card-title">Language corrections <span style={{ color: 'var(--muted)', fontWeight: 400 }}>· {feedback.summary}</span></div>
+                  <div style={{ display: 'grid', gap: 16, marginTop: 11 }}>
+                    {(['high', 'medium', 'low'] as const).map((severity) => {
+                      const corrections = feedback.corrections.filter((correction) => correction.severity === severity);
+                      if (corrections.length === 0) return null;
+                      return (
+                        <div key={severity}>
+                          <div className="eyebrow" style={{ color: severityColor(severity) }}>{severityLabel(severity)}</div>
+                          <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
+                            {corrections.map((correction) => <div className="correction-row" key={`${correction.original}-${correction.corrected}`}><div className="correction-original">{correction.original}</div><div className="correction-fixed">{correction.corrected}</div><div className="correction-why">{correction.explanation}</div></div>)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {feedback.corrections.length === 0 ? <div className="empty-note">No high-signal recurring error was detected in this short sample. That is not the same as a full pronunciation evaluation.</div> : null}
+                  </div>
+                </div>
                 <div><div className="card-title">Evidence</div><div style={{ marginTop: 12, display: 'flex', alignItems: 'baseline', gap: 8 }}><span style={{ fontSize: 33, fontWeight: 760, letterSpacing: '-.06em' }}>{feedback.score}</span><span className="card-meta">/ 100 language signal</span></div><div style={{ display: 'grid', gap: 9, marginTop: 14 }}>{feedback.strengths.map((strength) => <div key={strength} style={{ display: 'flex', gap: 7, color: '#c8d9d3', fontSize: 11, lineHeight: 1.45 }}><CheckIcon size={14} />{strength}</div>)}</div><div className="notice" style={{ marginTop: 15, borderColor: 'rgba(89,195,240,.22)', background: 'rgba(89,195,240,.06)', color: '#b9d9e8' }}><ArrowRightIcon size={14} /><span>Next focus: {feedback.nextFocus}</span></div></div>
               </div>
             </div>
           </div> : null}
+          {feedback ? (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+              <button type="button" className="secondary-button" onClick={recordAgain}>Record again</button>
+            </div>
+          ) : null}
         </section>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}><span className="card-meta">Speaking feedback is based on the transcript available in this browser. Pronunciation is intentionally not scored without reliable audio evidence.</span><Link href="/practice" className="secondary-button" style={{ whiteSpace: 'nowrap' }}>Grammar practice <ArrowRightIcon size={14} /></Link></div>
       </div>
@@ -124,4 +158,16 @@ export default function SpeakingPage() {
 
 function FalowSpeakingBadge() {
   return <div style={{ width: 52, height: 52, borderRadius: 16, display: 'grid', placeItems: 'center', background: 'rgba(89,195,240,.11)', color: 'var(--cyan)', border: '1px solid rgba(89,195,240,.23)', position: 'relative', zIndex: 1 }}><MicIcon size={22} /></div>;
+}
+
+function severityLabel(severity: SpeakingCorrection['severity']): string {
+  if (severity === 'high') return 'High impact';
+  if (severity === 'medium') return 'Medium impact';
+  return 'Low impact';
+}
+
+function severityColor(severity: SpeakingCorrection['severity']): string {
+  if (severity === 'high') return 'var(--amber)';
+  if (severity === 'medium') return 'var(--cyan)';
+  return 'var(--muted)';
 }

@@ -304,6 +304,7 @@ export const initialState: LearningState = {
     { id: 'session-3', title: 'Reading: The hidden cost of speed', kind: 'reading', score: 91, xp: 22, date: 'Sep 16' }
   ],
   assessmentHistory: [],
+  dailyXp: {},
   vocabularyReviewCount: 18,
   lastUpdated: new Date().toISOString()
 };

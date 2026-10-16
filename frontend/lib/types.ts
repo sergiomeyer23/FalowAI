@@ -105,6 +105,8 @@ export interface LearningState {
   activityAttempts: Record<string, number>;
   recentSessions: RecentSession[];
   assessmentHistory: AssessmentRecord[];
+  /** XP awarded per day, keyed by the YYYY-MM-DD date the XP was awarded. */
+  dailyXp: Record<string, number>;
   vocabularyReviewCount: number;
   lastUpdated: string;
 }
