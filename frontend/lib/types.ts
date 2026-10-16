@@ -134,6 +134,8 @@ export interface SpeakingCorrection {
   corrected: string;
   explanation: string;
   severity: 'low' | 'medium' | 'high';
+  /** Habilidade em que a correção foi observada, quando conhecida. */
+  skill?: SkillKey;
 }
 
 export interface SpeakingFeedback {

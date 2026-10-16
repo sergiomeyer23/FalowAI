@@ -74,7 +74,7 @@ export default function SpeakingPage() {
       const finalText = finalTextRef.current.trim();
       if (finalText) {
         setTranscript(finalText);
-        const result = analyzeSpeakingTranscript(finalText);
+        const result = analyzeSpeakingTranscript(finalText, { skill: 'speaking' });
         setFeedback(result);
         updateState((state) => ({
           ...state,
@@ -132,7 +132,16 @@ export default function SpeakingPage() {
                         <div key={severity}>
                           <div className="eyebrow" style={{ color: severityColor(severity) }}>{severityLabel(severity)}</div>
                           <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
-                            {corrections.map((correction) => <div className="correction-row" key={`${correction.original}-${correction.corrected}`}><div className="correction-original">{correction.original}</div><div className="correction-fixed">{correction.corrected}</div><div className="correction-why">{correction.explanation}</div></div>)}
+                            {corrections.map((correction) => (
+                              <div className="correction-row" key={`${correction.original}-${correction.corrected}`}>
+                                <div className="correction-original">{correction.original}</div>
+                                <div className="correction-fixed">{correction.corrected}</div>
+                                <div className="correction-why">
+                                  {correction.explanation}
+                                  {correction.skill ? <span className="dim" style={{ display: 'block', marginTop: 4 }}>Observed in <b>{correction.skill}</b></span> : null}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       );
